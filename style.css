@@ -1,0 +1,227 @@
+:root {
+  color-scheme: light;
+  font-family: system-ui, sans-serif;
+  color: #222;
+  background: #f7f7f5;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  min-height: 50vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  padding: 40px 24px;
+}
+
+main { width: min(100%, 1100px); }
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.lede {
+  margin: 0 0 32px;
+  color: #666;
+  font-size: 14px;
+}
+
+ul, li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sections {
+  display: grid;
+  gap: 40px;
+}
+
+.section {
+  display: grid;
+  gap: 16px;
+}
+
+.section-title {
+  margin: 0;
+  color: #666;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Exactly 4 boxes per row */
+.prompts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+/* The Box */
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 110px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #d8d8d4;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.card:hover {
+  background: #fafafa;
+  border-color: #aaa;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.card:focus-visible {
+  outline: 2px solid #555;
+  outline-offset: 2px;
+}
+
+/* Top Row */
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  line-height: 1.3;
+  flex: 1;
+  word-break: break-word;
+}
+
+/* Copy Hint on Hover */
+.card-copy-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 150ms ease;
+  pointer-events: none;
+  user-select: none;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.card:hover .card-copy-hint,
+.card.is-copied .card-copy-hint {
+  opacity: 1;
+}
+
+/* Bottom Row (Icons) */
+.card-bottom {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Eye Icon Button */
+.card-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #a1a1aa; /* Lighter gray default */
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.card-preview:hover {
+  color: #52525b; /* Darker gray on hover, no background */
+}
+
+/* Star Icon */
+.card-star {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a1a1aa; /* Same lighter gray default */
+}
+
+/* Yellow filled star if marked */
+.card-star.is-starred {
+  color: #eab308; 
+}
+.card-star.is-starred svg {
+  fill: #eab308;
+}
+
+/* Responsive fallbacks */
+@media (max-width: 900px) {
+  .prompts { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 500px) {
+  .prompts { grid-template-columns: 1fr; }
+}
+
+/* Dialog Styles */
+.dialog {
+  width: min(640px, calc(100vw - 32px));
+  max-height: 82vh;
+  padding: 0;
+  border: 1px solid #d8d8d4;
+  border-radius: 8px;
+  background: #fff;
+  color: #222;
+}
+
+.dialog::backdrop { background: rgb(0 0 0 / 0.35); }
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #ececea;
+}
+
+.dialog-header h2 { margin: 0; font-size: 16px; font-weight: 600; }
+
+.dialog-close {
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  font-size: 16px;
+  color: #555;
+  cursor: pointer;
+}
+
+.dialog-close:hover { background: #f0f0ed; }
+
+.dialog-body {
+  margin: 0;
+  padding: 20px;
+  max-height: 70vh; /* Increased slightly to fill the space left by the footer */
+  overflow: auto;
+  white-space: pre-wrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card, .card-copy-hint { transition: none; }
+}

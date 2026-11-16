@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prompts</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-family=%22system-ui,sans-serif%22 font-weight=%22bold%22 font-size=%2280%22 fill=%22%23333%22>p</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Prompts</h1>
+    <p class="lede">Click a box to copy the whole prompt.</p>
+    <ul class="sections" id="sections">
+      <li class="prompts-status">Loading…</li>
+    </ul>
+  </main>
+
+  <dialog class="dialog" id="dialog">
+    <header class="dialog-header">
+      <h2 id="dialog-title"></h2>
+      <form method="dialog">
+        <button class="dialog-close" aria-label="Close">✕</button>
+      </form>
+    </header>
+    <pre class="dialog-body" id="dialog-body"></pre>
+  </dialog>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
