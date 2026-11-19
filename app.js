@@ -15,17 +15,23 @@ init();
 async function init() {
   try {
     const files = await fetchJSON(MANIFEST_URL);
-    if (!Array.isArray(files)) throw new Error('prompts.json must be an array of filenames');
+    if (!Array.isArray(files)) throw new Error('prompts.json must be an array of filenames or objects');
 
     sections = (
       await Promise.all(
-        files.map(async (file) => {
+        files.map(async (item) => {
+          // Support both old string format and new object format
+          const file = typeof item === 'string' ? item : item.file;
+          const tagColor = typeof item === 'string' ? null : item.tagColor;
+
+          if (!file) return null;
+
           const md = await fetchText(PROMPT_DIR + file);
           const fallback = file.replace(/\.md$/i, '');
-          return parseSection(md, fallback);
+          return parseSection(md, fallback, { tagColor });
         })
       )
-    ).filter((s) => s.prompts.length > 0);
+    ).filter((s) => s && s.prompts.length > 0);
 
     render();
   } catch (err) {
@@ -33,7 +39,7 @@ async function init() {
   }
 }
 
-function parseSection(md, fallbackTitle) {
+function parseSection(md, fallbackTitle, colors = {}) {
   const lines = md.replace(/\r\n/g, '\n').split('\n');
   let title = fallbackTitle;
   const prompts = [];
@@ -52,12 +58,9 @@ function parseSection(md, fallbackTitle) {
       const h2 = line.match(/^##\s+(.*)$/);
       if (h2) {
         if (current) prompts.push(current);
-        
         let rawTitle = h2[1].trim();
-        
         const isStarred = rawTitle.includes('⭐') || rawTitle.toLowerCase().includes('[star]');
         const cleanTitle = rawTitle.replace('⭐', '').replace(/\[star\]/ig, '').trim();
-        
         current = { title: cleanTitle, isStarred, lines: [] };
         continue;
       }
@@ -69,18 +72,17 @@ function parseSection(md, fallbackTitle) {
 
   return {
     title,
+    tagColor: colors.tagColor,
     prompts: prompts.map((p) => {
       let text = p.lines.join('\n').trim();
-      
       if (text.startsWith('```') && text.endsWith('```')) {
         const tLines = text.split('\n');
         if (tLines.length >= 2) {
-          tLines.shift(); 
-          tLines.pop();   
+          tLines.shift();
+          tLines.pop();
           text = tLines.join('\n').trim();
         }
       }
-      
       return { title: p.title, text, isStarred: p.isStarred };
     }).filter((p) => p.title && p.text)
   };
@@ -104,35 +106,31 @@ function render() {
   const frag = document.createDocumentFragment();
 
   for (const section of sections) {
-    const sectionLi = document.createElement('li');
-    sectionLi.className = 'section';
-
-    const heading = document.createElement('h2');
-    heading.className = 'section-title';
-    heading.textContent = section.title;
-
-    const ul = document.createElement('ul');
-    ul.className = 'prompts';
-
-    for (const prompt of section.prompts) {
-      ul.append(buildCard(prompt, flatPrompts.length));
+    section.prompts.forEach((prompt, i) => {
+      const index = flatPrompts.length;
+      // Pass the color to buildCard for the first prompt of the section
+      frag.append(buildCard(prompt, index, i === 0 ? section.title : '', section.tagColor));
       flatPrompts.push(prompt);
-    }
-
-    sectionLi.append(heading, ul);
-    frag.append(sectionLi);
+    });
   }
 
   sectionsEl.append(frag);
 }
 
-function buildCard(prompt, index) {
+function buildCard(prompt, index, sectionTitle = '', tagColor = null) {
   const card = document.createElement('li');
   card.className = 'card';
   card.dataset.index = String(index);
-  card.tabIndex = 0; 
+  card.tabIndex = 0;
   card.setAttribute('role', 'button');
   card.setAttribute('aria-label', `Copy prompt: ${prompt.title}`);
+
+  if (sectionTitle) {
+    card.classList.add('card-section-start');
+    card.dataset.sectionTitle = sectionTitle;
+    // Apply the custom color via a CSS variable
+    if (tagColor) card.style.setProperty('--tag-color', tagColor);
+  }
 
   // Top Row (Title + Copy Hint)
   const topRow = document.createElement('div');
@@ -224,7 +222,6 @@ async function handleCopy(card, index) {
 
   const hint = card.querySelector('.card-copy-hint');
   const originalHTML = hint.innerHTML;
-  
   card.classList.add('is-copied');
   hint.innerHTML = `
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a7f37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -232,7 +229,6 @@ async function handleCopy(card, index) {
     </svg>
     <span style="color: #1a7f37;">Copied</span>
   `;
-  
   clearTimeout(card._reset);
   card._reset = setTimeout(() => {
     hint.innerHTML = originalHTML;
@@ -243,7 +239,6 @@ async function handleCopy(card, index) {
 sectionsEl.addEventListener('click', (event) => {
   const card = event.target.closest('.card');
   if (!card) return;
-  
   const index = Number(card.dataset.index);
 
   if (event.target.closest('.card-preview')) {
@@ -258,10 +253,9 @@ sectionsEl.addEventListener('keydown', (event) => {
   if (event.key !== 'Enter' && event.key !== ' ') return;
   const card = event.target.closest('.card');
   if (!card) return;
-  
-  if (event.target.closest('.card-preview')) return; 
+  if (event.target.closest('.card-preview')) return;
 
-  event.preventDefault(); 
+  event.preventDefault();
   handleCopy(card, Number(card.dataset.index));
 });
 

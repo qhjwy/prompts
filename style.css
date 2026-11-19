@@ -7,11 +7,22 @@
 
 * { box-sizing: border-box; }
 
+/* Keep the scrollbar's space reserved so the 4-column grid
+   doesn't shift horizontally when content grows past one screen. */
+html { scrollbar-gutter: stable; }
+
+/*
+  IMPORTANT: align to the TOP, not the center.
+  With `place-items: center` the whole <main> block is centered vertically,
+  so while the page is short (loading state) the title sits near the middle
+  and then jumps up once the cards load. `start center` keeps the horizontal
+  centering but pins the content to the top for any amount of content.
+*/
 body {
   min-height: 50vh;
   margin: 0;
   display: grid;
-  place-items: center;
+  place-items: start center;
   padding: 40px 24px;
 }
 
@@ -35,34 +46,21 @@ ul, li {
   padding: 0;
 }
 
+/*
+  Continuous grid with breathing room.
+  Row gap is 48px to leave space for the section labels.
+  Padding-top ensures the first row's labels don't get clipped.
+*/
 .sections {
   display: grid;
-  gap: 40px;
-}
-
-.section {
-  display: grid;
-  gap: 16px;
-}
-
-.section-title {
-  margin: 0;
-  color: #666;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-/* Exactly 4 boxes per row */
-.prompts {
-  display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 48px 16px;
+  padding-top: 24px;
 }
 
 /* The Box */
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -84,6 +82,25 @@ ul, li {
 .card:focus-visible {
   outline: 2px solid #555;
   outline-offset: 2px;
+}
+
+/*
+  Section label attached to the first card of each section.
+  Positioned to sit perfectly in the 48px gap above the card.
+*/
+.card-section-start::before {
+  content: attr(data-section-title);
+  position: absolute;
+  left: 0;
+  top: -24px;
+  white-space: nowrap;
+  pointer-events: none;
+
+  /* Uses the color from your JSON, or falls back to gray */
+  color: var(--tag-color, #52525b); /* vary H, S 78, B 46 */
+  padding: 4px 9px;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
 }
 
 /* Top Row */
@@ -142,13 +159,13 @@ ul, li {
   padding: 0;
   border: none;
   background: none;
-  color: #a1a1aa; /* Lighter gray default */
+  color: #a1a1aa;
   cursor: pointer;
   transition: color 150ms ease;
 }
 
 .card-preview:hover {
-  color: #52525b; /* Darker gray on hover, no background */
+  color: #52525b;
 }
 
 /* Star Icon */
@@ -156,23 +173,41 @@ ul, li {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #a1a1aa; /* Same lighter gray default */
+  color: #a1a1aa;
 }
 
-/* Yellow filled star if marked */
 .card-star.is-starred {
-  color: #eab308; 
+  color: #eab308;
 }
+
 .card-star.is-starred svg {
   fill: #eab308;
 }
 
+/* Loading placeholder: same box footprint as a card row,
+   so nothing under it reflows when the real cards arrive. */
+.sections .loading {
+  grid-column: 1 / -1;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #666;
+}
+
 /* Responsive fallbacks */
 @media (max-width: 900px) {
-  .prompts { grid-template-columns: repeat(2, 1fr); }
+  .sections {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px 16px;
+  }
 }
+
 @media (max-width: 500px) {
-  .prompts { grid-template-columns: 1fr; }
+  .sections {
+    grid-template-columns: 1fr;
+    gap: 32px 0;
+  }
 }
 
 /* Dialog Styles */
@@ -197,7 +232,11 @@ ul, li {
   border-bottom: 1px solid #ececea;
 }
 
-.dialog-header h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.dialog-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
 
 .dialog-close {
   padding: 4px 8px;
@@ -209,12 +248,14 @@ ul, li {
   cursor: pointer;
 }
 
-.dialog-close:hover { background: #f0f0ed; }
+.dialog-close:hover {
+  background: #f0f0ed;
+}
 
 .dialog-body {
   margin: 0;
   padding: 20px;
-  max-height: 70vh; /* Increased slightly to fill the space left by the footer */
+  max-height: 70vh;
   overflow: auto;
   white-space: pre-wrap;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;

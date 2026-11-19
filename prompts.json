@@ -1,6 +1,6 @@
 [
-  "lecture-slides.md",
-  "xie.md",
-  "reading.md",
-  "cihui.md"
+  { "file": "lecture-slides.md", "tagColor": "#6B1A75" },
+  { "file": "reading.md", "tagColor": "#751A1A" },
+  { "file": "cihui.md", "tagColor": "#1A7548" },
+  { "file": "xie.md", "tagColor": "#1A3475" }
 ]
